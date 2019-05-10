@@ -1,0 +1,9 @@
+/**
+ * 
+ */
+/**
+ * @author maccl
+ *
+ */
+module OperaRoles {
+}
