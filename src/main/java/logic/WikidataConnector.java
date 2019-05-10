@@ -228,7 +228,7 @@ public class WikidataConnector {
 				+ "PREFIX bd: <http://www.bigdata.com/rdf#>\r\n"
 				+ "SELECT ?item ?itemLabel ?itemDescription ?play \r\n"
 				+ "WHERE \r\n" + "{\r\n"
-				+ "  ?item wdt:P31 wd:Q50386450.\r\n"
+				+ "  ?item wdt:P31 wd:Q15632617.\r\n"
 				+ "  ?item wdt:" + Utils.playType + " ?play.\r\n"
 				+ "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + language + ",en,[AUTO_LANGUAGE]\". }\r\n"
 				+ "}\r\n";
