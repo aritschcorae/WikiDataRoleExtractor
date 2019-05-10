@@ -2,23 +2,29 @@ package valueobject;
 
 import java.util.List;
 
-public class Opera {
+/**
+ * Valueobject representing a performance with roles and a composer
+ * 
+ * @author maccl
+ *
+ */
+public class Play {
 
 	private String name;
 	private String qID;
 	private String url;
-	private List<String> componist;
+	private List<String> composer;
 	private List<List<String>> roles;
 	private List<Role> roleNames;
 
-	public Opera(String meta) {
+	public Play(String meta) {
 		String[] split = meta.split(",");
 		qID = split[1];
 		url = split[2];
 		name = split[3];
 	}
 	
-	public Opera() {
+	public Play() {
 		
 	}
 
@@ -46,12 +52,12 @@ public class Opera {
 		this.url = url;
 	}
 
-	public List<String> getComponist() {
-		return componist;
+	public List<String> getComposerList() {
+		return composer;
 	}
 
-	public void setComponist(List<String> componist) {
-		this.componist = componist;
+	public void setComposerList(List<String> componist) {
+		this.composer = componist;
 	}
 
 	public List<List<String>> getRoles() {
@@ -72,15 +78,7 @@ public class Opera {
 
 	@Override
 	public String toString() {
-		return "Opera [name=" + name + ", qID=" + qID + ", url=" + url + ", componist=" + componist + ", roles=" + roles + "]";
-	}
-
-	public String getCSVHeader() {
-		return "ID,NAME,QID,URL";
-	}
-
-	public String toCSVString() {
-		return qID + "," + name + "," + url;
+		return "Performance [name=" + name + ", qID=" + qID + ", url=" + url + ", componist=" + composer + ", roles=" + roles + "]";
 	}
 	
 	public String getHeaderRow() {
@@ -96,7 +94,7 @@ public class Opera {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((componist == null) ? 0 : componist.hashCode());
+		result = prime * result + ((composer == null) ? 0 : composer.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((qID == null) ? 0 : qID.hashCode());
 		result = prime * result + ((roleNames == null) ? 0 : roleNames.hashCode());
@@ -113,11 +111,11 @@ public class Opera {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Opera other = (Opera) obj;
-		if (componist == null) {
-			if (other.componist != null)
+		Play other = (Play) obj;
+		if (composer == null) {
+			if (other.composer != null)
 				return false;
-		} else if (!componist.equals(other.componist))
+		} else if (!composer.equals(other.composer))
 			return false;
 		if (name == null) {
 			if (other.name != null)

@@ -26,16 +26,12 @@ public class QuickStatementCreator {
 	private static final String WIKIDATA_LABEL = "L";
 	private static final String WIKIDATA_DESCRIPTION = "D";
 
-	// link from opera to role
+	// link from play to role
 	private static final String WIKIDATA_PROPERTY_CHARACTERS = "P674";
 	private static final String WIKIDATA_PROPERTY_OPENED_AT = "S813";
 	private static final String WIKIDATA_PROPERTY_IMPORTED_FROM = "S143";
 	
 
-	private static final String WIKIDATA_ITEM_OPERA_FIGURE = "Q50386450";
-	private static final String WIKIDATA_ITEM_FICTIONAL_HUMAN = "Q15632617";
-	
-	
 	private static final String QUICKSTATEMENT_SOURCE_WIKIPEDIA_P1 = WIKIDATA_PROPERTY_IMPORTED_FROM + TAB;
 	private static final String QUICKSTATEMENT_SOURCE_WIKIPEDIA_P2 = TAB + WIKIDATA_PROPERTY_OPENED_AT + TAB + "+2019-05-09T00:00:00Z/11";
 	private static final String QUICKSTATEMENT_LAST_CREATED_ID = "LAST";
@@ -43,7 +39,7 @@ public class QuickStatementCreator {
 
 	public static void main(String[] args) throws IOException {
 		String language = Utils.language;
-		String wikipediaLanguageQID = "Q8447";
+		String wikipediaLanguageQID = Utils.wikipediaQid;
 		String quickStatementSource = QUICKSTATEMENT_SOURCE_WIKIPEDIA_P1 + wikipediaLanguageQID + QUICKSTATEMENT_SOURCE_WIKIPEDIA_P2;
 		String fileName = "data-merged.csv";
 		String outputName = "roles_quickstatements.txt";
@@ -63,10 +59,10 @@ public class QuickStatementCreator {
 				roleQID = QUICKSTATEMENT_LAST_CREATED_ID;
 				bw.write(QUICKSTATEMENT_CREAT_COMMAND);
 				bw.newLine();
-				bw.write(roleQID + TAB + WIKIDATA_PROPERTY_IS_A + TAB + WIKIDATA_ITEM_OPERA_FIGURE + TAB + quickStatementSource);
-				bw.newLine();
-				bw.write(roleQID + TAB + WIKIDATA_PROPERTY_IS_A + TAB + WIKIDATA_ITEM_FICTIONAL_HUMAN + TAB + quickStatementSource);
-				bw.newLine();
+				for (String roleCharacteristic : Utils.roleType) {
+					bw.write(roleQID + TAB + WIKIDATA_PROPERTY_IS_A + TAB + roleCharacteristic + TAB + quickStatementSource);
+					bw.newLine();
+				}
 			}
 			
 			bw.write(roleQID + TAB + WIKIDATA_LABEL + language +TAB + PARENTHESIS + roleName + PARENTHESIS);
@@ -75,12 +71,12 @@ public class QuickStatementCreator {
 			bw.write(roleQID + TAB + WIKIDATA_DESCRIPTION + language + TAB + PARENTHESIS + description + PARENTHESIS);
 			bw.newLine();
 
-			String operaQID = role[0];
-			bw.write(roleQID + TAB + WIKIDATA_PROPERTY_PRESENT_IN_WORK + TAB + operaQID + TAB + quickStatementSource);
+			String playQID = role[0];
+			bw.write(roleQID + TAB + WIKIDATA_PROPERTY_PRESENT_IN_WORK + TAB + playQID + TAB + quickStatementSource);
 			bw.newLine();
 			
-			//add role as character to the opera
-			bw.write(operaQID + TAB + WIKIDATA_PROPERTY_CHARACTERS + TAB + roleQID + TAB + quickStatementSource);
+			//add role as character to the play
+			bw.write(playQID + TAB + WIKIDATA_PROPERTY_CHARACTERS + TAB + roleQID + TAB + quickStatementSource);
 			bw.newLine();
 			bw.newLine();
 		}

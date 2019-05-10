@@ -23,9 +23,11 @@ public class Utils {
     public static String wikipediaQid;
     public static String defaultDescriptionStart;
     public static String defaultDescriptionBy;
-    public static LinkedList<String> comparisonKeyWordsList = new LinkedList<String>();
-    public static LinkedList<String> stringsToRemoveList = new LinkedList<String>();
-    public static LinkedList<String> trimKeywordList = new LinkedList<String>();
+    public static String playType;
+    public static List<String> comparisonKeyWordsList = new LinkedList<String>();
+    public static List<String> stringsToRemoveList = new LinkedList<String>();
+    public static List<String> trimKeywordList = new LinkedList<String>();
+    public static List<String> roleType = new LinkedList<String>();
 
 	public static List<String> wikipediaSectionHeader = new LinkedList<String>();
 	public static void main(String[] args) throws FileNotFoundException, IOException {
@@ -51,7 +53,7 @@ public class Utils {
 	 */
 	public static void loadProperties() throws IOException {
 		String readFile = readFile("src/main/resources/default.properties");
-		boolean loadKeywords = false, loadComparisonWords = false, loadRemovalStrings = false, trimKeywords = false;
+		boolean loadKeywords = false, loadComparisonWords = false, loadRemovalStrings = false, trimKeywords = false, roleType = false;
 		for (String propertyLine : readFile.split(WINDOWS_NEW_LINE)) {
 			if(propertyLine.startsWith("language=")) {
 				language = propertyLine.split("=")[1];
@@ -59,14 +61,17 @@ public class Utils {
 				wikipediaQid = propertyLine.split("=")[1];
 			} else if(propertyLine.startsWith("defaultDescription=")) {
 				String temp = propertyLine.split("=")[1];
-				String[] defaultDesc = temp.split("OPERA_NAME");
+				String[] defaultDesc = temp.split("PLAY_NAME");
 				defaultDescriptionStart = defaultDesc[0];
 				defaultDescriptionBy = defaultDesc[1];
+			} else if(propertyLine.startsWith("playType=")) {
+				playType = propertyLine.split("=")[1];
 			} else if(propertyLine.startsWith("#")) {
 				loadKeywords = propertyLine.startsWith("#wikipedia");
 				loadComparisonWords = propertyLine.startsWith("#comparison");
 				loadRemovalStrings = propertyLine.startsWith("#remove");
 				trimKeywords =propertyLine.startsWith("#trim"); 
+				trimKeywords =propertyLine.startsWith("#role type"); 
 				continue;
 			}
 			if(loadKeywords) {
@@ -77,6 +82,8 @@ public class Utils {
 				stringsToRemoveList.add(propertyLine);
 			} else if(trimKeywords) {
 				trimKeywordList.add(propertyLine);
+			} else if(roleType) {
+				
 			}
 		}
 	}

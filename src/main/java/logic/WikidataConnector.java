@@ -21,14 +21,14 @@ import org.apache.jena.sparql.util.FmtUtils;
 
 import com.github.jsonldjava.shaded.com.google.common.collect.Lists;
 
-import valueobject.Opera;
+import valueobject.Play;
 import valueobject.Role;
 
 public class WikidataConnector {
 
 	
 	/**
-	 * Executes a SPARQL query to retrieve all operas in wikidata with the name and
+	 * Executes a SPARQL query to retrieve all plays in wikidata with the name and
 	 * url to wikipedia by the language requested.
 	 * 
 	 * Language in short (i.e. en, fr, de)
@@ -36,9 +36,9 @@ public class WikidataConnector {
 	 * 
 	 * @param language
 	 */
-	public static List<Opera> getOperasInWikidataByLanguage(String language) {
-		List<Opera> queryResults = new LinkedList<Opera>();
-		String queryString = getOperasSPARQLQuery(language);
+	public static List<Play> getPlayInWikidataByLanguage(String language) {
+		List<Play> queryResults = new LinkedList<Play>();
+		String queryString = getPlaysSPARQLQuery(language);
 		QueryExecution qexec = QueryExecutionFactory.sparqlService("https://query.wikidata.org/sparql", queryString);
 		try {
 			ResultSet results = qexec.execSelect();
@@ -48,10 +48,9 @@ public class WikidataConnector {
 				header.add(results.getResultVars().get(col));
 			}
 			
-			
 			while (resultSetRewindable.hasNext()) {
-				Opera opera = extractOpera(language, resultSetRewindable, header);
-				addOpera(queryResults, opera);
+				Play play = extractPlay(language, resultSetRewindable, header);
+				addPlay(queryResults, play);
 			}
 		} catch (Exception ex) {
 			System.out.println(ex.getMessage());
@@ -59,18 +58,18 @@ public class WikidataConnector {
 			qexec.close();
 		}
 		
-		for (Opera opera : queryResults) {
-			opera.getqID();
+		for (Play play : queryResults) {
+			play.getqID();
 		}
 		return queryResults;
 	}
 
 
-	private static void addOpera(List<Opera> queryResults, Opera opera) {
-		if(opera != null) {
-			boolean load = addComponistIfOperaAlreadyExists(queryResults, opera);
+	private static void addPlay(List<Play> queryResults, Play play) {
+		if(play != null) {
+			boolean load = addComponistIfPlayAlreadyExists(queryResults, play);
 			if(load) {
-				queryResults.add(opera);
+				queryResults.add(play);
 			}
 		}
 	}
@@ -78,51 +77,51 @@ public class WikidataConnector {
 
 	/**
 	 * @param queryResults
-	 * @param opera
-	 * @return false if opera already exists
+	 * @param play
+	 * @return false if play already exists
 	 */
-	private static boolean addComponistIfOperaAlreadyExists(List<Opera> queryResults, Opera opera) {
+	private static boolean addComponistIfPlayAlreadyExists(List<Play> queryResults, Play play) {
 		boolean load = true;
-		for (Opera operaLoaded : queryResults) {
-			if(operaLoaded.getqID().equals(opera.getqID())) {
-				operaLoaded.getComponist().addAll(opera.getComponist());
+		for (Play playLoaded : queryResults) {
+			if(playLoaded.getqID().equals(play.getqID())) {
+				playLoaded.getComposerList().addAll(play.getComposerList());
 				load = false;
 			}
 		}
 		return load;
 	}
 
-	private static Opera extractOpera(String language, ResultSetRewindable resultSetRewindable, List<String> header) {
+	private static Play extractPlay(String language, ResultSetRewindable resultSetRewindable, List<String> header) {
 		QuerySolution rBind = resultSetRewindable.nextSolution();
-		Opera opera = new Opera();
+		Play play = new Play();
 		for (String key : header) {
 			String var = getVarValueAsString(rBind, key);
 			if("item".equals(key)) {
 				String qid = var.replace("<http://www.wikidata.org/entity/", "").replace(">", "");
-				opera.setqID(qid);
+				play.setqID(qid);
 			} else if("itemLabel".equals(key)) {
 				String name = var.replace("\"", "").replace("@" + language, "");
-				opera.setName(name);
+				play.setName(name);
 			}  else if("componistLabel".equals(key)) {
 				String name = var.replace("\"", "").replace("@" + language, "");
-				opera.setComponist(Lists.newArrayList(name));
+				play.setComposerList(Lists.newArrayList(name));
 			} else if("article".equals(key)) {
 				String url = var.replace("<", "").replace(">", "");
-				opera.setUrl(url);
+				play.setUrl(url);
 			}
 		}
-		//we only want the operas which have a url
-		if("".equals(opera.getUrl())) {
+		//we only want the plays which have a url
+		if("".equals(play.getUrl())) {
 			return null;
 		}
-		return opera;
+		return play;
 	}
 	
 	/**
 	 * @param language
-	 * @return SPARQL query to retreive all operas in wikidata with the qid, componist and link to the wikipedia page in the respective language
+	 * @return SPARQL query to retreive all plays in wikidata with the qid, componist and link to the wikipedia page in the respective language
 	 */
-	private static String getOperasSPARQLQuery(String language) {
+	private static String getPlaysSPARQLQuery(String language) {
 		String queryString = "PREFIX wdt: <http://www.wikidata.org/prop/direct/>\n" 
 				+ "PREFIX wd: <http://www.wikidata.org/entity/>\n"
 				+ "PREFIX wikibase: <http://wikiba.se/ontology#> \n" 
@@ -131,8 +130,8 @@ public class WikidataConnector {
 				+ "SELECT ?item ?itemLabel "
 				+ "?article ?componistLabel \r\n" 
 				+ "WHERE {\r\n" 
-				+ "  ?item wdt:P31 wd:Q1344.\r\n" 
-				+ "  ?item wdt:P86 ?componist. \r\n"
+				+ "  ?item wdt:P31 wd:" + Utils.playType + ".\r\n" 
+				+ "  OPTIONAL { ?item wdt:P86 ?componist. } \r\n"
 				+ "    OPTIONAL {\r\n"
 				+ "      ?article schema:about ?item .\r\n" 
 				+ "      ?article schema:inLanguage \"" + language + "\" .\r\n"
@@ -159,11 +158,11 @@ public class WikidataConnector {
 
 	/**
 	 * @param language
-	 * @return a map with all roles corresponding to an opera. key is the opera  qid
+	 * @return a map with all roles corresponding to a performance. key is the performance qid
 	 */
-	public static Map<String, List<Role>> getOperaRolesWikidataByLanguage(String language) {
+	public static Map<String, List<Role>> getPlayRolesWikidataByLanguage(String language) {
 		Map<String, List<Role>> queryResults = new HashMap<String, List<Role>>();
-		String queryString = getOperaRolesQuery(language);
+		String queryString = getPlayRolesQuery(language);
 		QueryExecution qexec = QueryExecutionFactory.sparqlService("https://query.wikidata.org/sparql", queryString);
 		try {
 			ResultSet results = qexec.execSelect();
@@ -174,7 +173,7 @@ public class WikidataConnector {
 			}
 			while (resultSetRewindable.hasNext()) {
 				QuerySolution rBind = resultSetRewindable.nextSolution();
-				String operaQid = null;
+				String playQid = null;
 				Role role = new Role();
 				for (String key : header) {
 					String var = getVarValueAsString(rBind, key);
@@ -196,15 +195,15 @@ public class WikidataConnector {
 					}  else if("itemDescription".equals(key)) {
 						String name = var.replace("\"", "").replace("@" + language, "");
 						role.setDescription(name);
-					} else if("opera".equals(key)) {
-						operaQid = var.replace("<http://www.wikidata.org/entity/", "").replace(">", "");
+					} else if("play".equals(key)) {
+						playQid = var.replace("<http://www.wikidata.org/entity/", "").replace(">", "");
 					}
 				}
-				if(operaQid != null) {
-					if(!queryResults.containsKey(operaQid)) {
-						queryResults.put(operaQid, new LinkedList<Role>());
+				if(playQid != null) {
+					if(!queryResults.containsKey(playQid)) {
+						queryResults.put(playQid, new LinkedList<Role>());
 					}
-					queryResults.get(operaQid).add(role);
+					queryResults.get(playQid).add(role);
 				}
 			}
 		} catch (Exception ex) {
@@ -218,41 +217,40 @@ public class WikidataConnector {
 	/**
 	 * @param language
 	 * @return SPARQL query to retrieve all roles in wikidata with the qid, role
-	 *         name, description and corresponding opera qid in the respective
+	 *         name, description and corresponding play qid in the respective
 	 *         language if available otherwise english
 	 */
-	private static String getOperaRolesQuery(String language) {
+	private static String getPlayRolesQuery(String language) {
 		String queryString = "PREFIX wdt: <http://www.wikidata.org/prop/direct/>\n"
 				+ "PREFIX wd: <http://www.wikidata.org/entity/>\n"
 				+ "PREFIX wikibase: <http://wikiba.se/ontology#> \n"
 				+ "PREFIX schema: <http://schema.org/>\n"
 				+ "PREFIX bd: <http://www.bigdata.com/rdf#>\r\n"
-				+ "SELECT ?item ?itemLabel ?itemDescription ?opera \r\n"
+				+ "SELECT ?item ?itemLabel ?itemDescription ?play \r\n"
 				+ "WHERE \r\n" + "{\r\n"
 				+ "  ?item wdt:P31 wd:Q50386450.\r\n"
-				+ "  ?item wdt:P1441 ?opera.\r\n"
+				+ "  ?item wdt:" + Utils.playType + " ?play.\r\n"
 				+ "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + language + ",en,[AUTO_LANGUAGE]\". }\r\n"
 				+ "}\r\n";
-//				+ "}\r\n"		
-//				+ "limit 100";
+//				+ "} limit 100 \r\n";		
 		return queryString;
 	}
 
 	/**
 	 * Helper method for testing purposes.
-	 * @return list of operas based on file passed.
+	 * @return list of plays based on file passed.
 	 */
-	public static List<Opera> createOperaFromWikipediaPages() throws FileNotFoundException, IOException {
-		List<Opera> operaList = new LinkedList<Opera>();
+	public static List<Play> createPlaysFromWikipediaPages() throws FileNotFoundException, IOException {
+		List<Play> playList = new LinkedList<Play>();
 		String wikiURLPath = "src\\main\\resources\\wikipedia url.txt";
 		BufferedReader br = new BufferedReader(new FileReader(new File(wikiURLPath)));
 		br.readLine();//skip header
 		while(br.ready()) {
-			String operaToProcess = br.readLine();
-			operaList.add(new Opera(operaToProcess));
+			String playToProcess = br.readLine();
+			playList.add(new Play(playToProcess));
 		}
 		br.close();
-		return operaList;
+		return playList;
 	}
 	
 }

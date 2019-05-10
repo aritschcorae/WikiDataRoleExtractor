@@ -23,8 +23,8 @@ public class StringCleanUp {
 		
 		BufferedReader br = new BufferedReader(new FileReader(new File(roles), StandardCharsets.UTF_8));
 		while (br.ready()) {
-			String operaToProcess = br.readLine();
-			String clean = removeHTMLTagAndPlaceholders(operaToProcess);
+			String playToProcess = br.readLine();
+			String clean = removeHTMLTagAndPlaceholders(playToProcess);
 			bw.write(clean);
 			bw.newLine();
 		}
@@ -116,10 +116,10 @@ public class StringCleanUp {
 		return linkLessRole;
 	}
 
-	private static String removeLink(String operaToProcess) {
-		String firstLink = getFirstLink(operaToProcess);
+	private static String removeLink(String playToProcess) {
+		String firstLink = getFirstLink(playToProcess);
 		String value = getLinkValue(firstLink);
-		String linklessLine = operaToProcess.replace(firstLink, value);
+		String linklessLine = playToProcess.replace(firstLink, value);
 		return linklessLine;
 	}
 
@@ -129,8 +129,8 @@ public class StringCleanUp {
 		
 	}
 
-	private static String getFirstLink(String operaToProcess) {
-		String t = operaToProcess.substring(operaToProcess.indexOf(HTML_ANCHOR_TAG_START));
+	private static String getFirstLink(String playToProcess) {
+		String t = playToProcess.substring(playToProcess.indexOf(HTML_ANCHOR_TAG_START));
 		String link = t.substring(0, t.indexOf(HTML_ANCHOR_TAG_CLOSE) + 4);
 		return link;
 	}

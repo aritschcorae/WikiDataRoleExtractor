@@ -10,13 +10,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import valueobject.Opera;
+import valueobject.Play;
 import valueobject.Role;
 
 /**
  * @author Rafael Arizcorreta
  * 
- * Class to be executed to extract data from wikidata and wikipedia and create a CSV with operas and their roles.
+ * Class to be executed to extract data from wikidata and wikipedia and create a CSV with plays and their roles.
  * settings are defined in the default.properties file.
  * 
  */
@@ -31,17 +31,17 @@ public class MainClass {
 	 */
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		String language = Utils.language;
-		List<Opera> operaFromWikidataList = WikidataConnector.getOperasInWikidataByLanguage(language);
-		System.out.println("operas in wikidata: " + operaFromWikidataList.size());
+		List<Play> playFromWikidataList = WikidataConnector.getPlayInWikidataByLanguage(language);
+		System.out.println("Plays in wikidata: " + playFromWikidataList.size());
 		
-		DataScrapper.extractRoles(operaFromWikidataList);
-		List<Opera> operaWithRoles = filterNonRoleOperas(operaFromWikidataList);
-		processRoles(operaWithRoles);
+		DataScrapper.extractRoles(playFromWikidataList);
+		List<Play> playsWithRoles = filterNonRolePlays(playFromWikidataList);
+		processRoles(playsWithRoles);
 		
-		Map<String, List<Role>> operaRolesWikidataByLanguage = WikidataConnector.getOperaRolesWikidataByLanguage(language);
-		System.out.println("loaded roles from " + operaRolesWikidataByLanguage.size() + " operas");
+		Map<String, List<Role>> playRolesWikidataByLanguage = WikidataConnector.getPlayRolesWikidataByLanguage(language);
+		System.out.println("loaded roles from " + playRolesWikidataByLanguage.size() + " plays");
 		
-		List<String> rolesAsPrintableStringList = matchRoles(operaWithRoles, operaRolesWikidataByLanguage);
+		List<String> rolesAsPrintableStringList = matchRoles(playsWithRoles, playRolesWikidataByLanguage);
 		
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("extract " + language + ".csv"), StandardCharsets.UTF_8));
 		for (String roleLine : rolesAsPrintableStringList) {
@@ -54,107 +54,107 @@ public class MainClass {
 	}
 
 	/**
-	 * @param operaWithRoles
-	 * @param operaRolesWikidataByLanguage
-	 * @return A List of Strings with opera roles including a header. If the roles
+	 * @param playWithRoles
+	 * @param playRolesWikidataByLanguage
+	 * @return A List of Strings with play roles including a header. If the roles
 	 *         names in wikipedia and wikidata match according to the
 	 *         Utils.compareStringsIngoringAccent method one row is returned.
 	 *         Otherwise one row per role is returned.
 	 * 
 	 */
-	private static List<String> matchRoles(List<Opera> operaWithRoles, Map<String, List<Role>> operaRolesWikidataByLanguage) {
+	private static List<String> matchRoles(List<Play> playWithRoles, Map<String, List<Role>> playRolesWikidataByLanguage) {
 		List<String> rolesAsPrintableStringList = new LinkedList<String>();
-		String header = "OperaQID|RoleQID|wikidataName|name|description|defaultdescription|wikidataDescription";
+		String header = "PlayQID|RoleQID|wikidataName|name|description|defaultdescription|wikidataDescription";
 		rolesAsPrintableStringList.add(header);
-		for (Opera opera : operaWithRoles) {
-			String operaQid = opera.getqID();
-			if(operaRolesWikidataByLanguage.containsKey(operaQid)) {
-				List<Role> wikidataRoles = operaRolesWikidataByLanguage.get(operaQid);
+		for (Play play : playWithRoles) {
+			String playQid = play.getqID();
+			if(playRolesWikidataByLanguage.containsKey(playQid)) {
+				List<Role> wikidataRoles = playRolesWikidataByLanguage.get(playQid);
 				List<Role> matchedRoles = new LinkedList<Role>();
-				for (Role role : opera.getRoleNames()) {
+				for (Role role : play.getRoleNames()) {
 					boolean matched = false;
 					for (Role wikidataRole : wikidataRoles) {
 						if (!matchedRoles.contains(wikidataRole) &&
 								Utils.compareStringsIngoringAccent(role.getName(), wikidataRole.getName())) {
 							matchedRoles.add(wikidataRole);
-							rolesAsPrintableStringList.add(getMatchedRoleLine(operaQid, role, wikidataRole));
+							rolesAsPrintableStringList.add(getMatchedRoleLine(playQid, role, wikidataRole));
 							matched = true;
 							break;
 						}
 					}
 					//if no match found just print simple line
 					if(!matched) {
-						rolesAsPrintableStringList.add(getSimpeRoleAsPrintableString(operaQid, role));
+						rolesAsPrintableStringList.add(getSimpeRoleAsPrintableString(playQid, role));
 					}
 				}
 				wikidataRoles.removeAll(matchedRoles);
 				for (Role wikidataRole : wikidataRoles) {
-					rolesAsPrintableStringList.add(getSimpeWikidataRoleLine(operaQid, wikidataRole));
+					rolesAsPrintableStringList.add(getSimpeWikidataRoleLine(playQid, wikidataRole));
 				}
 			} else {
-				// no roles  found for that opera
-				rolesAsPrintableStringList.addAll(getRolesAsPrintableString(opera));
+				// no roles  found for that play
+				rolesAsPrintableStringList.addAll(getRolesAsPrintableString(play));
 			}
 		}
 		return rolesAsPrintableStringList;
 	}
 
 	/**
-	 * @param opera
-	 * @return all roles of the opera as String 
+	 * @param play
+	 * @return all roles of the play as String 
 	 */
-	private static List<String> getRolesAsPrintableString(Opera opera) {
+	private static List<String> getRolesAsPrintableString(Play play) {
 		List<String> roles = new LinkedList<String>();
-		for (Role role : opera.getRoleNames()) {
-			getSimpeRoleAsPrintableString(opera.getqID(), role);
+		for (Role role : play.getRoleNames()) {
+			getSimpeRoleAsPrintableString(play.getqID(), role);
 		}
 		return roles;
 	}
 
 	/**
-	 * @param operaQid
+	 * @param playQid
 	 * @param role
 	 * @return the provided role from wikipedia as string
 	 */
-	private static String getSimpeRoleAsPrintableString(String operaQid, Role role) {
-		return operaQid + "|-|-|" + role.getName() + FILE_SEPARATOR_PIPE + role.getDescription() + FILE_SEPARATOR_PIPE + role.getDefaultDescription()
+	private static String getSimpeRoleAsPrintableString(String playQid, Role role) {
+		return playQid + "|-|-|" + role.getName() + FILE_SEPARATOR_PIPE + role.getDescription() + FILE_SEPARATOR_PIPE + role.getDefaultDescription()
 				+ FILE_SEPARATOR_PIPE;
 	}
 
 	/**
-	 * @param operaQid
+	 * @param playlQid
 	 * @param role
 	 * @return the provided role from wikidata as string
 	 */
-	private static String getSimpeWikidataRoleLine(String operaQid, Role role) {
-		String printout = operaQid + FILE_SEPARATOR_PIPE + role.getqID() + FILE_SEPARATOR_PIPE + role.getName() + "|-|-|-|" + role.getDescription();
+	private static String getSimpeWikidataRoleLine(String playlQid, Role role) {
+		String printout = playlQid + FILE_SEPARATOR_PIPE + role.getqID() + FILE_SEPARATOR_PIPE + role.getName() + "|-|-|-|" + role.getDescription();
 		return printout;
 	}
 
 	/**
-	 * @param operaQid
+	 * @param playQid
 	 * @param role
 	 * @param wikidataRole
 	 * @return the provided roles from wikipedia and wikidata merged
 	 */
-	private static String getMatchedRoleLine(String operaQid, Role role, Role wikidataRole) {
-		String printout = operaQid + FILE_SEPARATOR_PIPE + wikidataRole.getqID() + FILE_SEPARATOR_PIPE + wikidataRole.getName() + FILE_SEPARATOR_PIPE
+	private static String getMatchedRoleLine(String playQid, Role role, Role wikidataRole) {
+		String printout = playQid + FILE_SEPARATOR_PIPE + wikidataRole.getqID() + FILE_SEPARATOR_PIPE + wikidataRole.getName() + FILE_SEPARATOR_PIPE
 				+ role.getName() + FILE_SEPARATOR_PIPE + role.getDescription() + FILE_SEPARATOR_PIPE + role.getDefaultDescription() + FILE_SEPARATOR_PIPE
 				+ wikidataRole.getDescription();
 		return printout;
 	}
 
 	/**
-	 * @param operaWithRoles
-	 * Cleans up the roles in all the operas. Clean up contains:
+	 * @param playWithRoles
+	 * Cleans up the roles in all the plays. Clean up contains:
 	 * splitting of first column in the role string (either by ',', ';' or tab)
 	 * cleaning up the role names
 	 * creating a default description
 	 */
-	private static void processRoles(List<Opera> operaWithRoles) {
-		for (Opera opera : operaWithRoles) {
+	private static void processRoles(List<Play> playWithRoles) {
+		for (Play play : playWithRoles) {
 			List<Role> rolesNameList = new LinkedList<Role>();
-			List<List<String>> roles = opera.getRoles();
+			List<List<String>> roles = play.getRoles();
 			for (List<String> roleString : roles) {
 				if(!roleString.isEmpty()) {
 					Role role = new Role();
@@ -185,28 +185,28 @@ public class MainClass {
 					roleName = StringCleanUp.removeAfterKeyWords(roleName);
 					roleName = StringCleanUp.addClosingBracket(roleName);
 					role.setName(roleName);
-					role.setDefaultDescription(Utils.defaultDescriptionStart + opera.getName() + Utils.defaultDescriptionBy + opera.getComponist());
+					role.setDefaultDescription(Utils.defaultDescriptionStart + play.getName() + Utils.defaultDescriptionBy + play.getComposerList());
 					rolesNameList.add(role);
 				}
 			}
-			opera.setRoleNames(rolesNameList);
+			play.setRoleNames(rolesNameList);
 		}
 	}
 
-	private static List<Opera> filterNonRoleOperas(List<Opera> operaList) throws FileNotFoundException, IOException {
-		List<Opera> operaWithRoles = new LinkedList<Opera>();
-		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("opera_no_roles_extracted.csv")));
-		for (Opera opera : operaList) {
-			if (opera.getRoles() != null && !opera.getRoles().isEmpty()) {
-				operaWithRoles.add(opera);
+	private static List<Play> filterNonRolePlays(List<Play> playList) throws FileNotFoundException, IOException {
+		List<Play> playWithRoles = new LinkedList<Play>();
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("plays_no_roles_extracted.csv")));
+		for (Play play : playList) {
+			if (play.getRoles() != null && !play.getRoles().isEmpty()) {
+				playWithRoles.add(play);
 			} else {
-				bw.write(opera.getqID() + "," + opera.getUrl() + "," + opera.getName());
+				bw.write(play.getqID() + "," + play.getUrl() + "," + play.getName());
 				bw.newLine();
 			}
 		}
 		bw.close();
-		System.out.println("opears with roles: " + operaWithRoles.size());
-		return operaWithRoles;
+		System.out.println("opears with roles: " + playWithRoles.size());
+		return playWithRoles;
 	}
 
 
