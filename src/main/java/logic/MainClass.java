@@ -37,7 +37,7 @@ public class MainClass {
 		List<Play> playFromWikidataList = WikidataConnector.getPlayInWikidataByLanguage(language);
 		LOGGER.info("Plays in wikidata: " + playFromWikidataList.size());
 		
-		DataScrapper.extractRoles(playFromWikidataList);
+		DataScraping.extractRoles(playFromWikidataList);
 		List<Play> playsWithRoles = filterNonRolePlays(playFromWikidataList);
 		processRoles(playsWithRoles);
 		Map<String, List<Role>> playRolesWikidataByLanguage = WikidataConnector.getPlayRolesWikidataByLanguage(language);
@@ -109,7 +109,7 @@ public class MainClass {
 				// no roles  found for that play
 				List<String> rolesAsPrintableString = getRolesAsPrintableString(play);
 				rolesAsPrintableStringList.addAll(rolesAsPrintableString);
-				newRoles++;
+				newRoles += rolesAsPrintableString.size();
 			}
 		}
 		LOGGER.info("New Roles: " + newRoles);
@@ -252,7 +252,7 @@ public class MainClass {
 			}
 		}
 		bw.close();
-		LOGGER.info("Opears with roles: " + playWithRoles.size());
+		LOGGER.info("Plays with roles: " + playWithRoles.size());
 		return playWithRoles;
 	}
 

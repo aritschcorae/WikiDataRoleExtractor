@@ -12,10 +12,10 @@ import valueobject.Play;
 /**
  * @author Rafael Arizcorreta
  *
- * Scraps {@link Play} by their wikipedia url and returns a list with the roles as List of strings.
+ * Scrapes {@link Play} by their wikipedia url and returns a list with the roles as List of strings.
  *
  */
-public class DataScrapper {
+public class DataScraping {
 	
 	
 	public static void main(String[] args) throws IOException {
@@ -29,9 +29,9 @@ public class DataScrapper {
 	}
 
 	/**
-	 * Scraps wikipedia pages based on the {@link Play} list containing links to wikipedia.
-	 * The scrapping tool checks for the list of keywords for and checks if a
-	 * unsorted list or a table is available and scraps the data out of there.
+	 * Scrapes wikipedia pages based on the {@link Play} list containing links to wikipedia.
+	 * The scraping tool checks for the list of keywords for and checks if a
+	 * unsorted list or a table is available and scrapes the data out of there.
 	 * tables are higher priority
 	 * 
 	 * @param playList
@@ -90,7 +90,7 @@ public class DataScrapper {
 	}
 	
 	/**
-	 * Scraps the wikipage for a table which is in a span of the keyword list.
+	 * Scrapes the wikipage for a table which is in a span of the keyword list.
 	 * If matched returns the whole table content.
 	 * 
 	 * @param urlSource Source code of the wikipage
@@ -139,7 +139,7 @@ public class DataScrapper {
 	}
 
 	/**
-	 * Scraps the wikipedia page for spans in the span id list. If match is found
+	 * Scrapes the wikipedia page for spans in the span id list. If match is found
 	 * processed the following unsorted list and creates roles based on that.
 	 * 
 	 * @param urlSource
