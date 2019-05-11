@@ -19,7 +19,7 @@ public class DataScraping {
 	
 	
 	public static void main(String[] args) throws IOException {
-		List<List<String>> playList = extractRoles("https://en.wikipedia.org/wiki/Miss_Saigon");
+		List<List<String>> playList = extractRoles("https://de.wikipedia.org/wiki/Amphitryon_(Kleist)");
 		for (List<String> list : playList) {
 			for (String item : list) {
 				System.out.print(StringCleanUp.removeHTMLTagAndPlaceholders(item));
@@ -67,6 +67,34 @@ public class DataScraping {
 		String urlSource = Utils.getURLSource(url);
 		List<String> spanIds = getSpanIds(urlSource);
 		List<List<String>> rolesAsList = extractRoles(urlSource, spanIds);
+		if(rolesAsList.isEmpty()) {
+			rolesAsList = extractFromInfobox(urlSource);
+		}
+		return rolesAsList;
+	}
+
+	/**
+	 * @param urlSource
+	 * @return list with list of roles containing roles out of the infobox in wikipedia
+	 */
+	private static List<List<String>> extractFromInfobox(String urlSource) {
+		List<List<String>> rolesAsList;
+		rolesAsList = new LinkedList<List<String>>();
+		for (String id : Utils.wikipediaSectionHeader) {
+			if(urlSource.contains("<th colspan=\"2\" style=\"text-align:left;\">" + id + "\n</th>")){
+				String string = urlSource.split("<th colspan=\"2\" style=\"text-align:left;\">" + id + "\n</th>")[1];
+				string = string.substring(0, string.indexOf("</tbody></table>"));
+				if (string.contains("<ul>")) {
+					String list = string.substring(string.indexOf("<ul>"), string.indexOf("</ul>"));
+					String[] rolesSplit = list.split(Utils.WINDOWS_NEW_LINE);
+					for (String a : rolesSplit) {
+						rolesAsList.add(Arrays.asList(a));
+					}
+					break;
+				}
+			
+			}
+		}
 		return rolesAsList;
 	}
 

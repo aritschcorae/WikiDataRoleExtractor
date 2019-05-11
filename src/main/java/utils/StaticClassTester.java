@@ -1,9 +1,11 @@
-package logic;
+package utils;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import logic.Utils;
+import logic.WikidataConnector;
 import valueobject.Role;
 
 public class StaticClassTester {
