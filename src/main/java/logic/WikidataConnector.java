@@ -220,7 +220,7 @@ public class WikidataConnector {
 	 *         name, description and corresponding play qid in the respective
 	 *         language if available otherwise english
 	 */
-	private static String getPlayRolesQuery(String language) {
+	public static String getPlayRolesQuery(String language) {
 		String queryString = "PREFIX wdt: <http://www.wikidata.org/prop/direct/>\n"
 				+ "PREFIX wd: <http://www.wikidata.org/entity/>\n"
 				+ "PREFIX wikibase: <http://wikiba.se/ontology#> \n"
@@ -229,7 +229,8 @@ public class WikidataConnector {
 				+ "SELECT ?item ?itemLabel ?itemDescription ?play \r\n"
 				+ "WHERE \r\n" + "{\r\n"
 				+ "  ?item wdt:P31 wd:Q15632617.\r\n"
-				+ "  ?item wdt:" + Utils.playType + " ?play.\r\n"
+				+ "  ?item wdt:P1441 ?play.\r\n"
+				+ "  ?play wdt:P31 wd:" + Utils.playType
 				+ "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"" + language + ",en,[AUTO_LANGUAGE]\". }\r\n"
 				+ "}\r\n";
 //				+ "} limit 100 \r\n";		

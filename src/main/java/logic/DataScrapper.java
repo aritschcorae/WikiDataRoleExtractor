@@ -3,6 +3,7 @@ package logic;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class DataScrapper {
 	
 	
 	public static void main(String[] args) throws IOException {
-		List<List<String>> playList = extractRoles("https://fr.wikipedia.org/wiki/I_due_Foscari");
+		List<List<String>> playList = extractRoles("https://en.wikipedia.org/wiki/Miss_Saigon");
 		for (List<String> list : playList) {
 			for (String item : list) {
 				System.out.print(StringCleanUp.removeHTMLTagAndPlaceholders(item));
@@ -38,10 +39,10 @@ public class DataScrapper {
 	 * @throws IOException
 	 */
 	public static List<Play> extractRoles(List<Play> playList) throws FileNotFoundException, IOException {
-		for (Play oerformance : playList) {
+		for (Play play : playList) {
 			try {
-				List<List<String>> roles = extractRoles(oerformance.getUrl());
-				oerformance.setRoles(roles);
+				List<List<String>> roles = extractRoles(play.getUrl());
+				play.setRoles(roles);
 			} catch (StringIndexOutOfBoundsException s) {
 			}
 		}
@@ -65,11 +66,8 @@ public class DataScrapper {
 	private static List<List<String>> extractRoles(String url) throws FileNotFoundException, IOException {
 		String urlSource = Utils.getURLSource(url);
 		List<String> spanIds = getSpanIds(urlSource);
-		String roleAsHTML = extractRolesAsHTMLTable(urlSource, spanIds);
-		if (roleAsHTML == null) {
-			return extractRolesOfUnsortedList(urlSource, spanIds);
-		}
-		return extractRolesFromTable(roleAsHTML);
+		List<List<String>> rolesAsList = extractRoles(urlSource, spanIds);
+		return rolesAsList;
 	}
 
 	/**
@@ -80,10 +78,12 @@ public class DataScrapper {
 		List<String> spanIds = new LinkedList<String>();
 		String[] split = urlSource.split("<span");
 		for (String spanItem : split) {
-			String getSpanId = spanItem.split(">")[0];
-			if (getSpanId.contains("id=\"")) {
-				String spanId = getSpanId.split("id=\"")[1].replace("\"", "");
-				spanIds.add(spanId);
+			if(!spanItem.startsWith(">")) {
+				String getSpanId = spanItem.split(">")[0];
+				if (getSpanId.contains("id=\"")) {
+					String spanId = getSpanId.split("id=\"")[1].replace("\"", "");
+					spanIds.add(spanId);
+				}
 			}
 		}
 		return spanIds;
@@ -98,15 +98,20 @@ public class DataScrapper {
 	 * @return A the table containing all roles. 
 	 * @throws IOException
 	 */
-	private static String extractRolesAsHTMLTable(String urlSource, List<String> spanIds) throws IOException {
-		String roles ="";
-		for (String roleId : Utils.wikipediaSectionHeader) {
-			roles = extractRolesAsHTMLById(urlSource, roleId, spanIds);
-			if(roles != null)
-				return roles;
+	private static List<List<String>> extractRoles(String urlSource, List<String> spanIds) throws IOException {
+		String roles = null;
+		List<List<String>> a;
+		for (String header : Utils.wikipediaSectionHeader) {
+			roles = extractRolesAsHTMLById(urlSource, header, spanIds);
+			if(roles != null) {
+				return extractRolesFromTable(roles);
+			}
+			a = extractRolesOfUnsortedList(urlSource, spanIds, header);
+			if(!a.isEmpty()) {
+				return a;
+			}
 		}
-				
-		return roles;
+		return Collections.emptyList();
 	}
 
 	/**
@@ -133,6 +138,39 @@ public class DataScrapper {
 		return null;
 	}
 
+	/**
+	 * Scraps the wikipedia page for spans in the span id list. If match is found
+	 * processed the following unsorted list and creates roles based on that.
+	 * 
+	 * @param urlSource
+	 * @param spanIds
+	 * @return List of all roles in an unsorted list.
+	 */
+	private static List<List<String>> extractRolesOfUnsortedList(String urlSource, List<String> spanIds, String roleId) {
+		List<List<String>> result = new LinkedList<List<String>>();
+		for (int i = 0; i < spanIds.size(); i++) {
+			String spanId = spanIds.get(i);
+			String nextSpanId = i + 1 == spanIds.size() ? null : spanIds.get(i + 1);
+			if (spanId.startsWith(roleId)) {
+				String start;
+				if (nextSpanId == null) {
+					start = urlSource.substring(urlSource.indexOf("id=\"" + spanId + "\">"));
+				} else {
+					start = urlSource.substring(urlSource.indexOf("id=\"" + spanId + "\">"), urlSource.indexOf("id=\"" + nextSpanId + "\">"));
+				}
+				if (start.contains("<ul>")) {
+					String list = start.substring(start.indexOf("<ul>"), start.indexOf("</ul>"));
+					String[] rolesSplit = list.split(Utils.WINDOWS_NEW_LINE);
+					for (String string : rolesSplit) {
+						result.add(Arrays.asList(string));
+					}
+					break;
+				}
+			}
+
+		}
+		return result;
+	}
 
 	/**
 	 * Parses the html table and extracts the roles in their.
@@ -158,11 +196,15 @@ public class DataScrapper {
 					tempRow.add(cleanUpHeader(string));
 				}
 			} else {
-				if ("</td></tr>".equals(string)) {
+				if ("</td></tr>".equals(string) || "</th></tr>".equals(string)) {
 					roles.add(tempRow);
 					tempRow = new LinkedList<String>();
-				} else if (headerSetting && string.startsWith("<td")) {
-					tempRow.add(string.replaceAll("<td>", "").replaceAll("</td>", ""));
+				} else if (headerSetting) {
+					if(string.startsWith("<td")) {
+						tempRow.add(string.replaceAll("<td>", "").replaceAll("</td>", ""));
+					} else if (string.startsWith("<th")) {
+						tempRow.add(string.replaceAll("<th>", "").replaceAll("</th>", ""));
+					}
 				}
 			}
 		}
@@ -187,42 +229,6 @@ public class DataScrapper {
 			return "Premiere Cast";
 		}
 		return lowerCaseHeader;
-	}
-
-	/**
-	 * Scraps the wikipedia page for spans in the span id list. If match is found
-	 * processed the following unsorted list and creates roles based on that.
-	 * 
-	 * @param urlSource
-	 * @param spanIds
-	 * @return List of all roles in an unsorted list.
-	 */
-	private static List<List<String>> extractRolesOfUnsortedList(String urlSource, List<String> spanIds) {
-		List<List<String>> result = new LinkedList<List<String>>();
-		for (String roleId : Utils.wikipediaSectionHeader) {
-			for (int i = 0; i < spanIds.size(); i++) {
-				String spanId = spanIds.get(i);
-				String nextSpanId = i +1 == spanIds.size() ? null: spanIds.get(i+1);
-				if (spanId.startsWith(roleId)) {
-					String start;
-					if(nextSpanId == null) {
-						start = urlSource.substring(urlSource.indexOf("id=\"" + spanId + "\">"));
-					} else {
-						start = urlSource.substring(urlSource.indexOf("id=\"" + spanId + "\">"), urlSource.indexOf("id=\"" + nextSpanId + "\">"));
-					}
-					if (start.contains("<ul>")) {
-						String list = start.substring(start.indexOf("<ul>"), start.indexOf("</ul>"));
-						String[] rolesSplit = list.split(Utils.WINDOWS_NEW_LINE);
-						for (String string : rolesSplit) {
-							result.add(Arrays.asList(string));
-						}
-						break;
-					}
-				}
-
-			}
-		}
-		return result;
 	}
 
 }

@@ -2,6 +2,8 @@ package valueobject;
 
 import java.util.List;
 
+import logic.Utils;
+
 /**
  * Valueobject representing a performance with roles and a composer
  * 
@@ -13,7 +15,7 @@ public class Play {
 	private String name;
 	private String qID;
 	private String url;
-	private List<String> composer;
+	private List<String> composers;
 	private List<List<String>> roles;
 	private List<Role> roleNames;
 
@@ -53,11 +55,21 @@ public class Play {
 	}
 
 	public List<String> getComposerList() {
-		return composer;
+		return composers;
+	}
+	public String getComposersAsString() {
+		String composerList = Utils.EMPTY_STRING;
+		for (int i = 0; i < composers.size(); i++){
+			composerList += composers.get(i);
+			if(i + 1 < composers.size()) {
+				composerList += ",";
+			}
+		}
+		return composerList;
 	}
 
 	public void setComposerList(List<String> componist) {
-		this.composer = componist;
+		this.composers = componist;
 	}
 
 	public List<List<String>> getRoles() {
@@ -78,7 +90,7 @@ public class Play {
 
 	@Override
 	public String toString() {
-		return "Performance [name=" + name + ", qID=" + qID + ", url=" + url + ", componist=" + composer + ", roles=" + roles + "]";
+		return "Performance [name=" + name + ", qID=" + qID + ", url=" + url + ", componist=" + composers + ", roles=" + roles + "]";
 	}
 	
 	public String getHeaderRow() {
@@ -94,7 +106,7 @@ public class Play {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((composer == null) ? 0 : composer.hashCode());
+		result = prime * result + ((composers == null) ? 0 : composers.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((qID == null) ? 0 : qID.hashCode());
 		result = prime * result + ((roleNames == null) ? 0 : roleNames.hashCode());
@@ -112,10 +124,10 @@ public class Play {
 		if (getClass() != obj.getClass())
 			return false;
 		Play other = (Play) obj;
-		if (composer == null) {
-			if (other.composer != null)
+		if (composers == null) {
+			if (other.composers != null)
 				return false;
-		} else if (!composer.equals(other.composer))
+		} else if (!composers.equals(other.composers))
 			return false;
 		if (name == null) {
 			if (other.name != null)

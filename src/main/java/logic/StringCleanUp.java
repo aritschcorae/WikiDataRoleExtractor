@@ -33,11 +33,14 @@ public class StringCleanUp {
 	}
 	
 	public static void main (String args[]) {
-		System.out.println(removeHTMLTagAndPlaceholders("<td colspan=\"3\">Three assistants (acolytes)"));
-		System.out.println(removeHTMLTagAndPlaceholders("hans <td colspan=\"3\">Three assistants"));
-		System.out.println(removeAfterKeyWords("soprano) favorite d'Orosmane: Enrichetta Méric-Lalande"));
-		System.out.println(removeAfterKeyWords("grand maître des provisions (ténor)"));
-		System.out.println(removeAfterKeyWords("Un vieux gitan (basse): Raffaele Marconi (secondo basso)"));
+//		System.out.println(removeHTMLTagAndPlaceholders("<td colspan=\"3\">Three assistants (acolytes)"));
+//		System.out.println(removeHTMLTagAndPlaceholders("hans <td colspan=\"3\">Three assistants"));
+		String desiree = "<li><b>Desiree Armfeldt</b>: Self-absorbed, once-successful actress, now touring the countryside in what is clearly not the \"glamorous life\". Harboured love for Fredrik for years since their affair. Mezzo F<span class=\"music-symbol\" style=\"font-family: Arial Unicode MS, Lucida Sans Unicode;\"><span class=\"music-sharp\">&#x266f;</span></span><sub>3</sub>–A<span class=\"music-symbol\" style=\"font-family: Arial Unicode MS, Lucida Sans Unicode;\"><span class=\"music-flat\">&#x266d;</span></span><sub>4</sub></li>";
+		System.out.println(desiree);
+		System.out.println(removeHTMLTagAndPlaceholders(desiree));
+//		System.out.println(removeAfterKeyWords("soprano) favorite d'Orosmane: Enrichetta Méric-Lalande"));
+//		System.out.println(removeAfterKeyWords("grand maître des provisions (ténor)"));
+//		System.out.println(removeAfterKeyWords("Un vieux gitan (basse): Raffaele Marconi (secondo basso)"));
 		
 	}
 	
@@ -55,6 +58,7 @@ public class StringCleanUp {
 		result = removeTag(result, "abbr");
 		result = removeTag(result, "/abbr");
 		result = removeColspanTag(result, "td");
+		result = removeColspanTag(result, "th");
 		result = removeColspanTag(result, "img");
 		result = removeColspanTag(result, "time");
 		for (String toRemove : Utils.stringsToRemoveList) {
@@ -101,7 +105,11 @@ public class StringCleanUp {
 		while (tagLessRole.contains(HTML_TAG_START + a) && tagLessRole.contains(HTML_TAG_CLOSE + a)) {
 			String start = tagLessRole.substring(0, tagLessRole.indexOf(HTML_TAG_START + a));
 			String end = tagLessRole.substring(tagLessRole.indexOf(HTML_TAG_CLOSE + a) + 3 + a.length());
-			tagLessRole = start + end;
+			while (end.contains(a)) {
+				end = end.substring(end.indexOf(HTML_TAG_CLOSE + a) + 3 + a.length());
+			}
+			String tempTag = start + end;
+			tagLessRole = tempTag;
 		}
 		return tagLessRole;
 	}

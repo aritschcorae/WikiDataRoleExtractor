@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import valueobject.Play;
 import valueobject.Role;
@@ -23,6 +24,7 @@ import valueobject.Role;
 public class MainClass {
 
 	private static final String FILE_SEPARATOR_PIPE = "|";
+	private static final Logger LOGGER = Logger.getLogger(MainClass.class.getName());
 
 	/**
 	 * @param args
@@ -30,16 +32,17 @@ public class MainClass {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws FileNotFoundException, IOException {
+		long startTime = System.currentTimeMillis();
 		String language = Utils.language;
 		List<Play> playFromWikidataList = WikidataConnector.getPlayInWikidataByLanguage(language);
-		System.out.println("Plays in wikidata: " + playFromWikidataList.size());
+		LOGGER.info("Plays in wikidata: " + playFromWikidataList.size());
 		
 		DataScrapper.extractRoles(playFromWikidataList);
 		List<Play> playsWithRoles = filterNonRolePlays(playFromWikidataList);
 		processRoles(playsWithRoles);
-		
 		Map<String, List<Role>> playRolesWikidataByLanguage = WikidataConnector.getPlayRolesWikidataByLanguage(language);
-		System.out.println("loaded roles from " + playRolesWikidataByLanguage.size() + " plays");
+		int wikidataRoles = countWikiDataRoles(playRolesWikidataByLanguage);
+		LOGGER.info("Loaded " + wikidataRoles + " roles from " + playRolesWikidataByLanguage.size() + " wikidata plays");
 		
 		List<String> rolesAsPrintableStringList = matchRoles(playsWithRoles, playRolesWikidataByLanguage);
 		
@@ -50,7 +53,15 @@ public class MainClass {
 		}
 		bw.close();
 		
-		
+		LOGGER.info("Finished in : " + ((System.currentTimeMillis() - startTime) /1000) + " seconds");
+	}
+
+	private static int countWikiDataRoles(Map<String, List<Role>> playRolesWikidataByLanguage) {
+		int wikidataRoles = 0;
+		for (String key : playRolesWikidataByLanguage.keySet()) {
+			wikidataRoles += playRolesWikidataByLanguage.get(key).size();
+		}
+		return wikidataRoles;
 	}
 
 	/**
@@ -63,6 +74,7 @@ public class MainClass {
 	 * 
 	 */
 	private static List<String> matchRoles(List<Play> playWithRoles, Map<String, List<Role>> playRolesWikidataByLanguage) {
+		int newRoles = 0, mergedRoles = 0, rolesinWiki = 0;
 		List<String> rolesAsPrintableStringList = new LinkedList<String>();
 		String header = "PlayQID|RoleQID|wikidataName|name|description|defaultdescription|wikidataDescription";
 		rolesAsPrintableStringList.add(header);
@@ -79,6 +91,7 @@ public class MainClass {
 							matchedRoles.add(wikidataRole);
 							rolesAsPrintableStringList.add(getMatchedRoleLine(playQid, role, wikidataRole));
 							matched = true;
+							mergedRoles++;
 							break;
 						}
 					}
@@ -90,12 +103,18 @@ public class MainClass {
 				wikidataRoles.removeAll(matchedRoles);
 				for (Role wikidataRole : wikidataRoles) {
 					rolesAsPrintableStringList.add(getSimpeWikidataRoleLine(playQid, wikidataRole));
+					rolesinWiki ++;
 				}
 			} else {
 				// no roles  found for that play
-				rolesAsPrintableStringList.addAll(getRolesAsPrintableString(play));
+				List<String> rolesAsPrintableString = getRolesAsPrintableString(play);
+				rolesAsPrintableStringList.addAll(rolesAsPrintableString);
+				newRoles++;
 			}
 		}
+		LOGGER.info("New Roles: " + newRoles);
+		LOGGER.info("Roles in Wikidata: " + rolesinWiki);
+		LOGGER.info("Roles merged: " + mergedRoles);
 		return rolesAsPrintableStringList;
 	}
 
@@ -106,7 +125,7 @@ public class MainClass {
 	private static List<String> getRolesAsPrintableString(Play play) {
 		List<String> roles = new LinkedList<String>();
 		for (Role role : play.getRoleNames()) {
-			getSimpeRoleAsPrintableString(play.getqID(), role);
+			roles.add(getSimpeRoleAsPrintableString(play.getqID(), role));
 		}
 		return roles;
 	}
@@ -155,19 +174,15 @@ public class MainClass {
 		for (Play play : playWithRoles) {
 			List<Role> rolesNameList = new LinkedList<Role>();
 			List<List<String>> roles = play.getRoles();
+			if("Q2530921".equals(play.getqID())) {
+				System.out.println("test");
+			}
 			for (List<String> roleString : roles) {
 				if(!roleString.isEmpty()) {
 					Role role = new Role();
-					String firstPart = StringCleanUp.removeHTMLTagAndPlaceholders(roleString.get(0));
+					String firstPart = StringCleanUp.removeHTMLTagAndPlaceholders(roleString.get(0)).trim();
 					
-					String splitSign = null;
-					if(firstPart.contains("\t")) {
-						splitSign = "\t";
-					} else if(firstPart.contains(";")) {
-						splitSign = ";";
-					} else if(firstPart.contains(",")) {
-						splitSign = ",";
-					}
+					String splitSign = getSplitSign(firstPart);
 					String roleName;
 					if(splitSign == null) {
 						roleName = firstPart;
@@ -185,12 +200,44 @@ public class MainClass {
 					roleName = StringCleanUp.removeAfterKeyWords(roleName);
 					roleName = StringCleanUp.addClosingBracket(roleName);
 					role.setName(roleName);
-					role.setDefaultDescription(Utils.defaultDescriptionStart + play.getName() + Utils.defaultDescriptionBy + play.getComposerList());
+					String defaultDescription = Utils.EMPTY_STRING;
+					if(!play.getComposerList().isEmpty()) {
+						defaultDescription = Utils.defaultDescriptionBy + " " + play.getComposersAsString();
+					}
+					role.setDefaultDescription(Utils.defaultDescriptionStart + play.getName() + defaultDescription);
 					rolesNameList.add(role);
 				}
 			}
 			play.setRoleNames(rolesNameList);
 		}
+	}
+
+	private static String getSplitSign(String toExtract) {
+		String[] hardIndicator = {":","\t", "--", "–", "-", "—"};
+		String[] softIndicator = {";",","};
+		
+		for (String splitIndicator : hardIndicator) {
+			if(toExtract.contains(splitIndicator)) {
+				return getSplitSignWithList(toExtract, hardIndicator);
+			}
+		}
+		return getSplitSignWithList(toExtract, softIndicator);
+	}
+
+	private static String getSplitSignWithList(String toExtract, String[] indicatorList) {
+		int firstSign = Integer.MAX_VALUE;
+		String splitSign = null;
+		for (String indicator : indicatorList) {
+			if (toExtract.contains(indicator)) {
+
+				int indexOf = toExtract.indexOf(indicator);
+				if (indexOf < firstSign) {
+					splitSign = indicator;
+					firstSign = indexOf;
+				}
+			}
+		}
+		return splitSign;
 	}
 
 	private static List<Play> filterNonRolePlays(List<Play> playList) throws FileNotFoundException, IOException {
@@ -205,7 +252,7 @@ public class MainClass {
 			}
 		}
 		bw.close();
-		System.out.println("opears with roles: " + playWithRoles.size());
+		LOGGER.info("Opears with roles: " + playWithRoles.size());
 		return playWithRoles;
 	}
 
