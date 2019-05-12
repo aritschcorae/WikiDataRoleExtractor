@@ -46,7 +46,7 @@ public class MainClass {
 		
 		List<String> rolesAsPrintableStringList = matchRoles(playsWithRoles, playRolesWikidataByLanguage);
 		
-		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("extract " + language + ".csv"), StandardCharsets.UTF_8));
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("extract " + language + "_" + Utils.playType + ".csv"), StandardCharsets.UTF_8));
 		for (String roleLine : rolesAsPrintableStringList) {
 			bw.write(roleLine);
 			bw.newLine();
@@ -174,9 +174,6 @@ public class MainClass {
 		for (Play play : playWithRoles) {
 			List<Role> rolesNameList = new LinkedList<Role>();
 			List<List<String>> roles = play.getRoles();
-			if("Q2530921".equals(play.getqID())) {
-				System.out.println("test");
-			}
 			for (List<String> roleString : roles) {
 				if(!roleString.isEmpty()) {
 					Role role = new Role();
@@ -194,14 +191,14 @@ public class MainClass {
 								description += " " + StringCleanUp.removeHTMLTagAndPlaceholders(roleString.get(i));
 							}
 						}
-						description = StringCleanUp.removeAfterKeyWords(description);
+						description = Utils.toLowerCase(StringCleanUp.removeAfterKeyWords(description));
 						role.setDescription(description);
 					}
 					roleName = StringCleanUp.removeAfterKeyWords(roleName);
 					roleName = StringCleanUp.addClosingBracket(roleName);
-					role.setName(roleName);
+					role.setName(roleName.trim());
 					String defaultDescription = Utils.EMPTY_STRING;
-					if(!play.getComposerList().isEmpty()) {
+					if(play.getComposerList() != null && !play.getComposerList().isEmpty()) {
 						defaultDescription = Utils.defaultDescriptionBy + " " + play.getComposersAsString();
 					}
 					role.setDefaultDescription(Utils.defaultDescriptionStart + play.getName() + defaultDescription);
@@ -247,7 +244,7 @@ public class MainClass {
 			if (play.getRoles() != null && !play.getRoles().isEmpty()) {
 				playWithRoles.add(play);
 			} else {
-				bw.write(play.getqID() + "," + play.getUrl() + "," + play.getName());
+				bw.write(play.getUrl() + "," + play.getqID() + "," + play.getName());
 				bw.newLine();
 			}
 		}

@@ -87,7 +87,7 @@ public class StringCleanUp {
 		if(!result.isEmpty() && result.charAt(result.length()-1) == '(') {
 			result = result.substring(0, result.length() -1);
 		}
-		return result;
+		return result.trim();
 	}
 	
 	private static String removeColspanTag(String stringToCleanUp, String tag) {

@@ -52,6 +52,7 @@ public class QuickStatementCreator {
 			if(roleName == null || roleName.isBlank() || "-".equals(roleName)) {
 				continue;
 			}
+			roleName = cleanUpRoleName(roleName);
 			String roleQID;
 			if (Utils.isQId(role[1])) {
 				roleQID = role[1];
@@ -84,6 +85,11 @@ public class QuickStatementCreator {
 		bw.close();
 	}
 
+	private static String cleanUpRoleName(String roleName) {
+		String cleanedUp = removeLastCharacter(roleName.trim(), ',');
+		return cleanedUp;
+	}
+
 	/**
 	 * Takes the default description and concatinates the optional description if available to it.
 	 * 
@@ -94,11 +100,23 @@ public class QuickStatementCreator {
 		String description = role[5];
 		if(role[4] != null && !role[4].isBlank() && !"-".equals(role[4])) {
 			String additionalDescription = role[4].trim();
-			if(additionalDescription.charAt(additionalDescription.length() -1) == ',') {
-				additionalDescription = additionalDescription.substring(0, additionalDescription.length() - 2);
+			//TODO lowercase when keyword
+			for(String keyWords : Utils.comparisonKeyWordsList) {
+				if(additionalDescription.split(" ")[0].toLowerCase().startsWith(keyWords)) {
+					additionalDescription = Utils.toLowerCase(additionalDescription);
+					break;
+				}
 			}
+			additionalDescription = removeLastCharacter(additionalDescription, ',');
 			description += "; " + additionalDescription;
 		}
 		return description;
+	}
+
+	private static String removeLastCharacter(String stringToProcess, char toRemove) {
+		if(stringToProcess.charAt(stringToProcess.length() -1) == toRemove) {
+			stringToProcess = stringToProcess.substring(0, stringToProcess.length() - 2);
+		}
+		return stringToProcess.trim();
 	}
 }

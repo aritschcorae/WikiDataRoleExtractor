@@ -158,6 +158,10 @@ public class Utils {
 		return false;
 	}
 	
+	public static String toLowerCase(String description) {
+		return Character.toLowerCase(description.charAt(0)) + description.substring(1);
+	}
+	
 	/**
 	 * Escapes the string from special character like é to e and compares the
 	 * strings ignoring upper and lower case. If no match was done and the strings
