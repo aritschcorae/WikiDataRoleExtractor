@@ -53,7 +53,7 @@ public class Utils {
 	 */
 	public static void loadProperties() throws IOException {
 		String readFile = readFile("src/main/resources/default.properties");
-		boolean loadKeywords = false, loadComparisonWords = false, loadRemovalStrings = false, trimKeywords = false, roleType = false;
+		boolean loadKeywords = false, loadComparisonWords = false, loadRemovalStrings = false, trimKeywords = false, roleTypes = false;
 		for (String propertyLine : readFile.split(WINDOWS_NEW_LINE)) {
 			if(propertyLine.startsWith("language=")) {
 				language = propertyLine.split("=")[1];
@@ -71,7 +71,7 @@ public class Utils {
 				loadComparisonWords = propertyLine.startsWith("#comparison");
 				loadRemovalStrings = propertyLine.startsWith("#remove");
 				trimKeywords =propertyLine.startsWith("#trim"); 
-				trimKeywords =propertyLine.startsWith("#role type"); 
+				roleTypes =propertyLine.startsWith("#role type"); 
 				continue;
 			}
 			if(loadKeywords) {
@@ -82,8 +82,8 @@ public class Utils {
 				stringsToRemoveList.add(propertyLine);
 			} else if(trimKeywords) {
 				trimKeywordList.add(propertyLine);
-			} else if(roleType) {
-				
+			} else if(roleTypes) {
+				roleType.add(propertyLine);
 			}
 		}
 	}
