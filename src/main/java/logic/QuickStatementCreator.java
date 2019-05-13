@@ -33,7 +33,7 @@ public class QuickStatementCreator {
 	
 
 	private static final String QUICKSTATEMENT_SOURCE_WIKIPEDIA_P1 = WIKIDATA_PROPERTY_IMPORTED_FROM + TAB;
-	private static final String QUICKSTATEMENT_SOURCE_WIKIPEDIA_P2 = TAB + WIKIDATA_PROPERTY_OPENED_AT + TAB + "+2019-05-09T00:00:00Z/11";
+	private static final String QUICKSTATEMENT_SOURCE_WIKIPEDIA_P2 = TAB + WIKIDATA_PROPERTY_OPENED_AT + TAB + "+2019-05-12T00:00:00Z/11";
 	private static final String QUICKSTATEMENT_LAST_CREATED_ID = "LAST";
 	private static final String QUICKSTATEMENT_CREAT_COMMAND = "CREATE";
 
@@ -100,7 +100,6 @@ public class QuickStatementCreator {
 		String description = role[5];
 		if(role[4] != null && !role[4].isBlank() && !"-".equals(role[4])) {
 			String additionalDescription = role[4].trim();
-			//TODO lowercase when keyword
 			for(String keyWords : Utils.comparisonKeyWordsList) {
 				if(additionalDescription.split(" ")[0].toLowerCase().startsWith(keyWords)) {
 					additionalDescription = Utils.toLowerCase(additionalDescription);
@@ -108,6 +107,9 @@ public class QuickStatementCreator {
 				}
 			}
 			additionalDescription = removeLastCharacter(additionalDescription, ',');
+			if((description + "; " + additionalDescription).length()> 250) {
+				additionalDescription = additionalDescription.substring(0, additionalDescription.indexOf("."));
+			}
 			description += "; " + additionalDescription;
 		}
 		return description;

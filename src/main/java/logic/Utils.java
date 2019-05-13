@@ -24,6 +24,7 @@ public class Utils {
     public static String defaultDescriptionStart;
     public static String defaultDescriptionBy;
     public static String playType;
+    public static Boolean autoTrim = Boolean.FALSE;
     public static List<String> comparisonKeyWordsList = new LinkedList<String>();
     public static List<String> stringsToRemoveList = new LinkedList<String>();
     public static List<String> trimKeywordList = new LinkedList<String>();
@@ -55,7 +56,9 @@ public class Utils {
 		String readFile = readFile("src/main/resources/default.properties");
 		boolean loadKeywords = false, loadComparisonWords = false, loadRemovalStrings = false, trimKeywords = false, roleTypes = false;
 		for (String propertyLine : readFile.split(WINDOWS_NEW_LINE)) {
-			if(propertyLine.startsWith("language=")) {
+			if(propertyLine.startsWith("autoTrim=")) {
+				autoTrim = Boolean.valueOf(propertyLine.split("=")[1]);
+			} else if(propertyLine.startsWith("language=")) {
 				language = propertyLine.split("=")[1];
 			} else if(propertyLine.startsWith("wikipediaLanguage=")) {
 				wikipediaQid = propertyLine.split("=")[1];
