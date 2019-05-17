@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Logger;
 
 /**
  * @author Rafael Arizcorreta
@@ -17,6 +18,8 @@ import java.nio.charset.StandardCharsets;
  *
  */
 public class QuickStatementCreator {
+	
+	private static final Logger LOGGER = Logger.getLogger(QuickStatementCreator.class.getName());
 
 	private static final String TAB = "\t";
 	private static final String PARENTHESIS = "\"";
@@ -46,6 +49,7 @@ public class QuickStatementCreator {
 		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), StandardCharsets.UTF_8));
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputName)));
 		br.readLine();
+		int newRoles = 0, mergedRoles = 0;
 		while (br.ready()) {
 			String[] role = br.readLine().split("\\|");
 			String roleName = role[3];
@@ -56,6 +60,7 @@ public class QuickStatementCreator {
 			String roleQID;
 			if (Utils.isQId(role[1])) {
 				roleQID = role[1];
+				mergedRoles ++;
 			} else {
 				roleQID = QUICKSTATEMENT_LAST_CREATED_ID;
 				bw.write(QUICKSTATEMENT_CREAT_COMMAND);
@@ -64,6 +69,7 @@ public class QuickStatementCreator {
 					bw.write(roleQID + TAB + WIKIDATA_PROPERTY_IS_A + TAB + roleCharacteristic + TAB + quickStatementSource);
 					bw.newLine();
 				}
+				newRoles ++;
 			}
 			
 			bw.write(roleQID + TAB + WIKIDATA_LABEL + language +TAB + PARENTHESIS + roleName + PARENTHESIS);
@@ -83,6 +89,8 @@ public class QuickStatementCreator {
 		}
 		br.close();
 		bw.close();
+		LOGGER.info(newRoles + " create statements have been generated");
+		LOGGER.info(mergedRoles + " statements with additional information have been generated");
 	}
 
 	private static String cleanUpRoleName(String roleName) {
