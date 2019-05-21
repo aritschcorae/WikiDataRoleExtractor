@@ -2,7 +2,7 @@ package valueobject;
 
 import java.util.List;
 
-import logic.Utils;
+import utils.Utils;
 
 /**
  * Valueobject representing a performance with roles and a composer
