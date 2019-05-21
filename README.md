@@ -9,3 +9,10 @@ After that, the application creates a file with Quickstatements in it. This is b
 
 
 Parameters can be adapted in the default.properties file.
+
+#How to
+Adjust the default.properties file with the data you want to extract.
+Build the project with maven (i.e. mvn clean install)
+Start the class DataExtractor. A file named extract_[language]_[playtype].csv is generated (i.e. extract_en_opera.csv)
+Manually check the created file. Are the roles matched. Every role which should create a QuickStatement should have a value in the "name" column.
+Rename the file to "data-merged.csv" and start the class "QuickStatementCreator". A file named roles_quickstatements.txt is generated. The content can be imported with QuickStatements (https://tools.wmflabs.org/quickstatements/)
