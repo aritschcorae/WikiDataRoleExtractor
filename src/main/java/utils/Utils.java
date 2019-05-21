@@ -31,13 +31,6 @@ public class Utils {
     public static List<String> roleType = new LinkedList<String>();
 
 	public static List<String> wikipediaSectionHeader = new LinkedList<String>();
-	public static void main(String[] args) throws FileNotFoundException, IOException {
-		loadProperties();
-		System.out.println(compareStringsIngoringAccent("hans", "hans"));
-		System.out.println(compareStringsIngoringAccent("queen a", "queen a"));
-		System.out.println(compareStringsIngoringAccent("queen a", "queen b"));
-		System.out.println(compareStringsIngoringAccent("le danseur", "le hans"));
-	}
 	
 	static {
 		try {
@@ -147,7 +140,7 @@ public class Utils {
 	}
 
 	public static boolean isQId(String name) {
-		if(name.startsWith("Q")) {
+		if(name != null && name.startsWith("Q")) {
 			return isNumber(name.substring(1));
 		}
 		return false;
@@ -162,6 +155,9 @@ public class Utils {
 	}
 	
 	public static String toLowerCase(String description) {
+		if(description == null || description.isEmpty()) {
+			return EMPTY_STRING;
+		}
 		return Character.toLowerCase(description.charAt(0)) + description.substring(1);
 	}
 	

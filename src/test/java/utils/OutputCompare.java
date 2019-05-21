@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import logic.Utils;
-
 public class OutputCompare {
 
 	private static final Logger LOGGER = Logger.getLogger(OutputCompare.class.getName());

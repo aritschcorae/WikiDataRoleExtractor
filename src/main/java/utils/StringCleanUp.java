@@ -1,13 +1,5 @@
 package utils;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
 public class StringCleanUp {
 
 	private static final String HTML_ANCHOR_TAG_START = "<a href";
@@ -15,35 +7,6 @@ public class StringCleanUp {
 	private static final String HTML_TAG_START = "<";
 	private static final String HTML_TAG_CLOSE = "</";
 
-	public static void maina(String[] args) throws IOException {
-
-		String roles = "src\\main\\resources\\characters_special.txt";
-		
-		BufferedWriter bw = new BufferedWriter(new FileWriter(new File("src\\main\\resources\\characters_special_noLink.txt"), StandardCharsets.UTF_8));
-		
-		BufferedReader br = new BufferedReader(new FileReader(new File(roles), StandardCharsets.UTF_8));
-		while (br.ready()) {
-			String playToProcess = br.readLine();
-			String clean = removeHTMLTagAndPlaceholders(playToProcess);
-			bw.write(clean);
-			bw.newLine();
-		}
-		br.close();
-		bw.close();
-	}
-	
-	public static void main (String args[]) {
-//		System.out.println(removeHTMLTagAndPlaceholders("<td colspan=\"3\">Three assistants (acolytes)"));
-//		System.out.println(removeHTMLTagAndPlaceholders("hans <td colspan=\"3\">Three assistants"));
-		String desiree = "<li><b>Desiree Armfeldt</b>: Self-absorbed, once-successful actress, now touring the countryside in what is clearly not the \"glamorous life\". Harboured love for Fredrik for years since their affair. Mezzo F<span class=\"music-symbol\" style=\"font-family: Arial Unicode MS, Lucida Sans Unicode;\"><span class=\"music-sharp\">&#x266f;</span></span><sub>3</sub>–A<span class=\"music-symbol\" style=\"font-family: Arial Unicode MS, Lucida Sans Unicode;\"><span class=\"music-flat\">&#x266d;</span></span><sub>4</sub></li>";
-		System.out.println(desiree);
-		System.out.println(removeHTMLTagAndPlaceholders(desiree));
-//		System.out.println(removeAfterKeyWords("soprano) favorite d'Orosmane: Enrichetta Méric-Lalande"));
-//		System.out.println(removeAfterKeyWords("grand maître des provisions (ténor)"));
-//		System.out.println(removeAfterKeyWords("Un vieux gitan (basse): Raffaele Marconi (secondo basso)"));
-		
-	}
-	
 	/**
 	 * Removes place holder and HTML tags which are poluting the String
 	 * 
