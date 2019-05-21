@@ -10,6 +10,8 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
+import utils.Utils;
+
 /**
  * @author Rafael Arizcorreta
  * 

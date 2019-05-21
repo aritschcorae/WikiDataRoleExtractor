@@ -21,6 +21,7 @@ import org.apache.jena.sparql.util.FmtUtils;
 
 import com.github.jsonldjava.shaded.com.google.common.collect.Lists;
 
+import utils.Utils;
 import valueobject.Play;
 import valueobject.Role;
 
@@ -121,7 +122,7 @@ public class WikidataConnector {
 	 * @param language
 	 * @return SPARQL query to retreive all plays in wikidata with the qid, componist and link to the wikipedia page in the respective language
 	 */
-	private static String getPlaysSPARQLQuery(String language) {
+	public static String getPlaysSPARQLQuery(String language) {
 		String queryString = "PREFIX wdt: <http://www.wikidata.org/prop/direct/>\n" 
 				+ "PREFIX wd: <http://www.wikidata.org/entity/>\n"
 				+ "PREFIX wikibase: <http://wikiba.se/ontology#> \n" 

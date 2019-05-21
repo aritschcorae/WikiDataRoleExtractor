@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import utils.StringCleanUp;
+import utils.Utils;
 import valueobject.Play;
 import valueobject.Role;
 
@@ -21,10 +23,10 @@ import valueobject.Role;
  * settings are defined in the default.properties file.
  * 
  */
-public class MainClass {
+public class DataExtractor {
 
 	private static final String FILE_SEPARATOR_PIPE = "|";
-	private static final Logger LOGGER = Logger.getLogger(MainClass.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(DataExtractor.class.getName());
 
 	/**
 	 * @param args
@@ -46,7 +48,7 @@ public class MainClass {
 		
 		List<String> rolesAsPrintableStringList = matchRoles(playsWithRoles, playRolesWikidataByLanguage);
 		
-		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("extract " + language + "_" + Utils.playType + ".csv"), StandardCharsets.UTF_8));
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("extract_ " + language + "_" + Utils.playType + ".csv"), StandardCharsets.UTF_8));
 		for (String roleLine : rolesAsPrintableStringList) {
 			bw.write(roleLine);
 			bw.newLine();
